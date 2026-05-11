@@ -9,7 +9,7 @@ services:
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: ${DB_NAME}
     ports:
-      - '5432:5432'
+      - '5433:5432'
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
@@ -33,6 +33,30 @@ services:
     volumes:
       - ./backend:/app
       - /app/node_modules
+
+  frontend:
+    build: ./frontend
+    container_name: agrellicursos_frontend
+    depends_on:
+      - backend
+    environment:
+      VITE_API_URL: http://localhost
+    ports:
+      - '5173:5173'
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+
+  nginx:
+    image: nginx:alpine
+    container_name: agrellicursos_nginx
+    ports:
+      - '80:80'
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - backend
+      - frontend
 
 volumes:
   pgdata:
