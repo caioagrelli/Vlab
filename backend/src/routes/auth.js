@@ -11,6 +11,14 @@ router.post('/register', async (req, res) => {
     return res.status(400).json({ error: 'Nome, email e senha são obrigatórios' });
   }
 
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    return res.status(400).json({ error: 'Email inválido' });
+  }
+
+  if (password.length < 6) {
+    return res.status(400).json({ error: 'Senha deve ter no mínimo 6 caracteres' });
+  }
+
   try {
     const existing = await pool.query('SELECT id FROM users WHERE email = $1', [email]);
     if (existing.rows.length > 0) {

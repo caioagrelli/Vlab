@@ -7,7 +7,7 @@ router.get('/', auth, async (req, res) => {
   const { name, status } = req.query;
 
   let query = `
-    SELECT DISTINCT c.id, c.name, c.description, c.start_date, c.end_date, c.user_id,
+    SELECT DISTINCT c.id, c.name, c.description, c.start_date, c.end_date, c.user_id, c.created_at,
       u.name AS owner_name
     FROM courses c
     JOIN users u ON u.id = c.user_id
@@ -50,8 +50,11 @@ router.get('/:id', auth, async (req, res) => {
       return res.status(404).json({ error: 'Curso não encontrado' });
     }
 
+    const isOwner = course.rows[0].user_id === req.userId;
     const lessons = await pool.query(
-      'SELECT * FROM lessons WHERE course_id = $1 ORDER BY created_at ASC',
+      isOwner
+        ? 'SELECT * FROM lessons WHERE course_id = $1 ORDER BY created_at ASC'
+        : "SELECT * FROM lessons WHERE course_id = $1 AND status = 'published' ORDER BY created_at ASC",
       [req.params.id]
     );
 
